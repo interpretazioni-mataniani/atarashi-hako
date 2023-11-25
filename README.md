@@ -1,5 +1,6 @@
 # Atarashi Hako
 Atarashi Hako (新しい箱 - 'new box' in Japanese) is a Docker container update script which uses [Skope](https://github.com/containers/skopeo) to update containers in a less aggressive way than existing tools, imported from my home system.
+Atarashi writes the output to a Prometheus file (`atarashi-hako.prom`), which can then be picked up by a Prometheus instance to notify when containers are updated\fail to update. An example alert (`prometheus-alert.yaml`) is included.
 
 It currently update Docker.io images. New repositories will be added in the future as needed.
 
