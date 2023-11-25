@@ -1,0 +1,31 @@
+    - alert: ContainerUpdateStatus
+      expr: |
+        increase(container_updated[1m]) > 0 and container_updated == 1
+      for: 1m
+      labels:
+        severity: info
+      annotations:
+        summary: "Container update status"
+        description: "The container was successfully updated."
+        source: 'https://monitor.your-domain.com'
+
+    - alert: NewContainerUpdate
+      expr: |
+        container_updated{job="takahe", name=~".+"} == 1
+      for: 1m
+      labels:
+        severity: warning
+      annotations:
+        summary: "New container update detected"
+        description: "A new container ('{{ $labels.name }}') was successfully updated."
+        source: 'https://monitor.your-domain.com'
+
+    - alert: ContainerUpdateFailure
+      expr: |
+        container_updated == 0 or container_updated == -1
+      labels:
+        severity: critical
+      annotations:
+        summary: "Container update failed"
+        description: "The container update metric indicates a failure. Check logs for details."
+        source: 'https://monitor.your-domain.com'

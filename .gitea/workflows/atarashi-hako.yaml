@@ -1,0 +1,41 @@
+name: Configure Atarashi Hako
+
+on:
+  push:
+  schedule:
+    - cron: '00 23 * * *' 
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      run: |
+        apt -y update 
+        apt -y install python3 python3-pip 
+
+    - name: Install Ansible
+      run: |
+        python3 -m pip install --upgrade pip
+        pip install ansible        
+
+    - name: Set up SSH
+      uses: webfactory/ssh-agent@v0.5.0
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+#                        ^ SSH key with access to your systems; used by Ansible
+    - name: Checkout Ansible inventory
+      run: |
+        ## Since I have multiple projects using the same Ansible inventory, I keep them in a seperate repo.
+        #+ You can either place your ansible inventory elsewhere and download it thus,
+        #+ or just place it in this repository.
+        INVENTORY_URL="https://your-git-user:${{ secrets.ACCESS_TOKEN }}@git.server.address/path/to/repo/raw/inventory.yaml"
+        curl -o inventory.yaml $INVENTORY_URL
+    
+    - name: Run Ansible Playbook
+      run: |
+          ansible-playbook -i inventory.yaml -e 'ANSIBLE_SUDO_PASS="${{ secrets.SUDO_PASS }}"' atarashi-hako.yaml -vv  

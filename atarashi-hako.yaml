@@ -1,0 +1,32 @@
+- hosts: takahe
+  gather_facts: no
+  become: yes
+  vars:
+    ansible_ssh_common_args: '-o StrictHostKeyChecking=no'
+    ansible_sudo_pass: "{{ ANSIBLE_SUDO_PASS }}"
+
+  tasks:
+    - name: Install Dependencies
+      ansible.builtin.package:
+        name: skopeo
+        state: latest
+    
+    - name: Install atarashi-hako
+      ansible.builtin.copy:
+        src: atarashi-hako.sh
+        dest: /usr/local/bin/atarashi-hako.sh
+        mode: 'a+x'
+
+    - name: Template service and timer to host
+      ansible.builtin.template:
+        src: "{{ item }}.j2"
+        dest: /etc/systemd/system/{{ item }}
+      with_items:
+        - atarashi-hako.service
+        - atarashi-hako.timer
+
+    - name: Start atarashi-hako timer
+      ansible.builtin.systemd:
+        name: atarashi-hako.timer
+        state: started
+        daemon_reload: true
